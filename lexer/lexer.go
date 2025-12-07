@@ -64,7 +64,7 @@ func Tokenize(data string) ([]Token, error) {
 		fmt.Printf("Token: %s, Value: %s\n", token.Type.String(), token.Value)
 		pos = new_pos
 		tokens = append(tokens, token)
-	}	
+	}
 
 	return tokens, nil
 }
