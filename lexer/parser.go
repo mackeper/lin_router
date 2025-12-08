@@ -29,10 +29,7 @@ type NumberValue struct {
 
 func (ExprValue) isValue()   {}
 func (v ExprValue) String() string {
-	for _, val := range v.Value.Values {
-		_ = val.String()
-	}
-	return fmt.Sprintf("(%s ...)", v.Value.Identifier)
+	return v.Value.String()
 }
 
 func (StringValue) isValue() {}
@@ -46,8 +43,9 @@ func (v NumberValue) String() string {
 }
 
 type Expr struct {
+	Type       ExprType
 	Identifier string
-	Values      []Value
+	Values     []Value
 }
 func (e Expr) String() string {
 	result := fmt.Sprintf("(%s", e.Identifier)
@@ -95,7 +93,11 @@ func parseExpr(tokens []Token, pos int) (Expr, int, error) {
 		}
 	}
 
-	return Expr{Identifier: identifier, Values: values}, pos, nil
+	return Expr{
+		Type:       IdentifierToExprType(identifier),
+		Identifier: identifier,
+		Values:     values,
+	}, pos+1, nil
 }
 
 func Parse(tokens []Token) (Expr, error) {

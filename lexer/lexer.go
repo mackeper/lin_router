@@ -41,7 +41,7 @@ func readNextToken(data string, pos int) (Token, int, error) {
 				value += string(data[pos])
 				pos++
 			}
-			return Token{Type: NUMBER, Value: value}, pos+1, nil
+			return Token{Type: NUMBER, Value: value}, pos, nil
 		case isLetter(data[pos]):
 			value := ""
 			for pos < len(data) && (isLetter(data[pos]) || isDigit(data[pos]) || data[pos] == '-') {

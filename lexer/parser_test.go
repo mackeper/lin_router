@@ -151,6 +151,22 @@ func TestValueString(t *testing.T) {
 			}},
 			"(greet \"world\" 42.000000)",
 		},
+		{
+			"Nested ExprValue",
+			ExprValue{Value: Expr{
+				Identifier: "outer",
+				Values: []Value{
+					ExprValue{Value: Expr{
+						Identifier: "inner",
+						Values: []Value{
+							StringValue{Value: "nested"},
+						},
+					}},
+					NumberValue{Value: 123},
+				},
+			}},
+			"(outer (inner \"nested\") 123.000000)",
+		},
 	}
 
 	for _, tt := range tests {
@@ -158,6 +174,89 @@ func TestValueString(t *testing.T) {
 			result := tt.value.String()
 			if result != tt.expected {
 				t.Errorf("Expected: %s, Actual: %s", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestTokenizeCount(t *testing.T) {
+	input := "(add 1 2.5)"
+	tokens, err := Tokenize(input)
+	if err != nil {
+		t.Fatalf("Tokenize failed: %v", err)
+	}
+	t.Logf("Token count: %d", len(tokens))
+	for i, tok := range tokens {
+		t.Logf("%d: %s = '%s'", i, tok.Type.String(), tok.Value)
+	}
+}
+
+func TestRoundtrip(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{
+			"Simple expression",
+			"(hello \"world\")",
+		},
+		{
+			"Expression with number",
+			"(add 1 2.5)",
+		},
+		{
+			"Nested expression",
+			"(outer (inner \"value\" 42) \"text\")",
+		},
+		{
+			"KiCad-like structure",
+			"(kicad_pcb (version 20240108) (general (thickness 1.6)))",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Parse the original input
+			tokens1, err := Tokenize(tt.input)
+			if err != nil {
+				t.Fatalf("Tokenize failed: %v", err)
+			}
+			expr1, err := Parse(tokens1)
+			if err != nil {
+				t.Fatalf("Parse failed: %v", err)
+			}
+
+			// Convert back to string
+			result := expr1.String()
+
+			// Parse the result
+			tokens2, err := Tokenize(result)
+			if err != nil {
+				t.Fatalf("Tokenize result failed: %v", err)
+			}
+			expr2, err := Parse(tokens2)
+			if err != nil {
+				t.Fatalf("Parse result failed: %v", err)
+			}
+
+			// Compare the two Exprs
+			if expr1.Identifier != expr2.Identifier {
+				t.Errorf("Identifier mismatch: %s != %s", expr1.Identifier, expr2.Identifier)
+			}
+			if len(expr1.Values) != len(expr2.Values) {
+				t.Errorf("Values length mismatch: %d != %d", len(expr1.Values), len(expr2.Values))
+			}
+
+			// Deep comparison of values
+			for i := range expr1.Values {
+				if ev1, ok := expr1.Values[i].(ExprValue); ok {
+					ev2, ok := expr2.Values[i].(ExprValue)
+					if !ok || !ev1.Equal(ev2) {
+						t.Errorf("ExprValue mismatch at index %d", i)
+					}
+				} else if expr1.Values[i] != expr2.Values[i] {
+					t.Errorf("Value mismatch at index %d: %v != %v", i, expr1.Values[i], expr2.Values[i])
+				}
 			}
 		})
 	}
