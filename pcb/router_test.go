@@ -17,7 +17,7 @@ func TestRouteBoard_TwoPadsSameNetCloseEnough(t *testing.T) {
 		Layer:    "F.Cu",
 	})
 
-	RouteBoard(board)
+	AddTrivialSegments(board)
 
 	if len(board.Segments) != 1 {
 		t.Errorf("Expected 1 segment, got %d", len(board.Segments))
@@ -43,7 +43,7 @@ func TestRouteBoard_TwoPadsTooFarApart(t *testing.T) {
 		Layer:    "F.Cu",
 	})
 
-	RouteBoard(board)
+	AddTrivialSegments(board)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments, got %d", len(board.Segments))
@@ -63,7 +63,7 @@ func TestRouteBoard_TwoPadsDifferentLayers(t *testing.T) {
 		Layer:    "B.Cu",
 	})
 
-	RouteBoard(board)
+	AddTrivialSegments(board)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments for different layers, got %d", len(board.Segments))
@@ -88,7 +88,7 @@ func TestRouteBoard_ThreePadsFormingTriangle(t *testing.T) {
 		Layer:    "F.Cu",
 	})
 
-	RouteBoard(board)
+	AddTrivialSegments(board)
 
 	if len(board.Segments) != 3 {
 		t.Errorf("Expected 3 segments for triangle, got %d", len(board.Segments))
@@ -108,7 +108,7 @@ func TestRouteBoard_DifferentNets(t *testing.T) {
 		Layer:    "F.Cu",
 	})
 
-	RouteBoard(board)
+	AddTrivialSegments(board)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments for different nets, got %d", len(board.Segments))
@@ -118,7 +118,7 @@ func TestRouteBoard_DifferentNets(t *testing.T) {
 func TestRouteBoard_EmptyBoard(t *testing.T) {
 	board := NewBoard()
 
-	RouteBoard(board)
+	AddTrivialSegments(board)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments for empty board, got %d", len(board.Segments))
@@ -133,7 +133,7 @@ func TestRouteBoard_SinglePad(t *testing.T) {
 		Layer:    "F.Cu",
 	})
 
-	RouteBoard(board)
+	AddTrivialSegments(board)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments for single pad, got %d", len(board.Segments))
@@ -147,7 +147,7 @@ func TestRouteBoard_MultipleNets(t *testing.T) {
 	board.AddPad(Pad{Position: Position{10, 10}, Net: Net{Number: 2, Name: "GND"}, Layer: "F.Cu"})
 	board.AddPad(Pad{Position: Position{11, 10}, Net: Net{Number: 2, Name: "GND"}, Layer: "F.Cu"})
 
-	RouteBoard(board)
+	AddTrivialSegments(board)
 
 	if len(board.Segments) != 2 {
 		t.Errorf("Expected 2 segments (one per net), got %d", len(board.Segments))
