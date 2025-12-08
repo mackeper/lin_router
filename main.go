@@ -21,9 +21,20 @@ func main() {
 		fmt.Println("Hello, Lin Router!")
 	}
 
-	_, err := ParsePcbFile(*inputPath)
+	expr, err := ParsePcbFile(*inputPath)
 	if err != nil {
 		fmt.Println("Error parsing PCB file:", err)
 		os.Exit(1)
 	}
+
+	fmt.Println("PCB file parsed successfully.")
+
+	pcb, err := ExprToPCB(expr)
+	if err != nil {
+		fmt.Println("Error converting expression to PCB:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("PCB conversion successful:", pcb)
+
 }
