@@ -190,3 +190,127 @@ func validatePad(t *testing.T, pad pcb.Pad, expectedX, expectedY float64, expect
 		t.Errorf("Expected pad layers %s, got %v", expectedLayers, pad.Layers)
 	}
 }
+
+func TestExprToPCB_FootprintWithPads(t *testing.T) {
+	// Arrange
+	expr := lexer.Expr{
+		Type: lexer.ExprKicadPcb,
+		Values: []lexer.Value{
+			lexer.ExprValue{
+				Value: lexer.Expr{
+					Type:       lexer.ExprFootprint,
+					Identifier: "footprint",
+					Values: []lexer.Value{
+						lexer.StringValue{Value: "TestLib:TestFootprint"},
+						lexer.ExprValue{
+							Value: lexer.Expr{
+								Type:       lexer.ExprAt,
+								Identifier: "at",
+								Values: []lexer.Value{
+									lexer.NumberValue{Value: 100.0},
+									lexer.NumberValue{Value: 200.0},
+								},
+							},
+						},
+						lexer.ExprValue{
+							Value: lexer.Expr{
+								Type:       lexer.ExprPad,
+								Identifier: "pad",
+								Values: []lexer.Value{
+									lexer.ExprValue{
+										Value: lexer.Expr{
+											Type:       lexer.ExprAt,
+											Identifier: "at",
+											Values: []lexer.Value{
+												lexer.NumberValue{Value: 5.0},
+												lexer.NumberValue{Value: 10.0},
+											},
+										},
+									},
+									lexer.ExprValue{
+										Value: lexer.Expr{
+											Type:       lexer.ExprNet,
+											Identifier: "net",
+											Values: []lexer.Value{
+												lexer.NumberValue{Value: 1},
+												lexer.StringValue{Value: "GND"},
+											},
+										},
+									},
+									lexer.ExprValue{
+										Value: lexer.Expr{
+											Type:       lexer.ExprLayer,
+											Identifier: "layer",
+											Values: []lexer.Value{
+												lexer.StringValue{Value: "F.Cu"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Act
+	board, err := ExprToPCB(expr)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	validateBoard(t, board, 1)
+	// Pad at relative (5, 10) + footprint at (100, 200) = absolute (105, 210)
+	validatePad(t, board.Pads[0], 105.0, 210.0, 1, "GND", "F.Cu")
+}
+
+func TestExprToPCB_FootprintMissingPosition(t *testing.T) {
+	// Arrange
+	expr := lexer.Expr{
+		Type: lexer.ExprKicadPcb,
+		Values: []lexer.Value{
+			lexer.ExprValue{
+				Value: lexer.Expr{
+					Type:       lexer.ExprFootprint,
+					Identifier: "footprint",
+					Values: []lexer.Value{
+						lexer.StringValue{Value: "TestLib:TestFootprint"},
+						lexer.ExprValue{
+							Value: lexer.Expr{
+								Type:       lexer.ExprPad,
+								Identifier: "pad",
+								Values: []lexer.Value{
+									lexer.ExprValue{
+										Value: lexer.Expr{
+											Type:       lexer.ExprAt,
+											Identifier: "at",
+											Values: []lexer.Value{
+												lexer.NumberValue{Value: 5.0},
+												lexer.NumberValue{Value: 10.0},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Act
+	board, err := ExprToPCB(expr)
+
+	// Assert
+	if err == nil {
+		t.Fatalf("Expected error for footprint missing position, got nil")
+	}
+	if board != nil {
+		t.Errorf("Expected nil board on error, got %v", board)
+	}
+}
