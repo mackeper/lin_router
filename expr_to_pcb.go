@@ -17,6 +17,7 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 
 		fmt.Printf("Processing expr of type: %v\n", current.Type)
 		if current.Type == lexer.ExprPad {
+			fmt.Printf("Found pad expression: %+v\n", current)
 			pad, _ := parsePadExpr(current)
 			pads = append(pads, pad)
 		} else {
@@ -36,6 +37,7 @@ func parsePadExpr(expr lexer.Expr) (pcb.Pad, error) {
 	pad := pcb.Pad{}
 
 	for _, val := range expr.Values {
+		fmt.Printf("Parsing pad sub-expression: %+v\n", val)
 		switch v := val.(type) {
 		case lexer.ExprValue:
 			subExpr := v.Value
@@ -51,7 +53,22 @@ func parsePadExpr(expr lexer.Expr) (pcb.Pad, error) {
 					Name:   subExpr.Values[1].(lexer.StringValue).Value,
 				}
 			case lexer.ExprLayer:
-				pad.Layer = subExpr.Values[0].(lexer.StringValue).Value
+				layer := subExpr.Values[0].(lexer.StringValue).Value
+				if layer == "*.Cu" {
+					pad.Layers = []string{"F.Cu", "B.Cu"}
+				} else {
+					pad.Layers = []string{layer}
+				}
+			case lexer.ExprLayers:
+				for _, layerVal := range subExpr.Values {
+					if strVal, ok := layerVal.(lexer.StringValue); ok {
+						if strVal.Value == "*.Cu" {
+							pad.Layers = append(pad.Layers, "F.Cu", "B.Cu")
+						} else {
+							pad.Layers = append(pad.Layers, strVal.Value)
+						}
+					}
+				}
 			}
 		}
 	}

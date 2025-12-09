@@ -2,7 +2,7 @@ BINARY_NAME=lin_router
 BUILD_DIR=bin
 MAIN_PATH=.
 
-all: clean build
+all: build
 
 build:
 	@echo "Building..."
@@ -15,10 +15,11 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@echo "Clean complete"
 
-run:
+run: build
 	@go run $(MAIN_PATH)
 
 build-run: build
+	@echo "Running built binary..."
 	@./$(BUILD_DIR)/$(BINARY_NAME)
 
 test: build

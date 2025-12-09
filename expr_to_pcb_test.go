@@ -179,14 +179,14 @@ func validateBoard(t *testing.T, board *pcb.Board, expectedPadCount int) {
 	}
 }
 
-func validatePad(t *testing.T, pad pcb.Pad, expectedX, expectedY float64, expectedNetNumber int, expectedNetName, expectedLayer string) {
+func validatePad(t *testing.T, pad pcb.Pad, expectedX, expectedY float64, expectedNetNumber int, expectedNetName, expectedLayers string) {
 	if pad.Position.X != expectedX || pad.Position.Y != expectedY {
 		t.Errorf("Expected pad position (%f, %f), got (%f, %f)", expectedX, expectedY, pad.Position.X, pad.Position.Y)
 	}
 	if pad.Net.Number != expectedNetNumber || pad.Net.Name != expectedNetName {
 		t.Errorf("Expected pad net (%d, %s), got (%d, %s)", expectedNetNumber, expectedNetName, pad.Net.Number, pad.Net.Name)
 	}
-	if pad.Layer != expectedLayer {
-		t.Errorf("Expected pad layer %s, got %s", expectedLayer, pad.Layer)
+	if len(pad.Layers) == 0 || pad.Layers[0] != expectedLayers {
+		t.Errorf("Expected pad layers %s, got %v", expectedLayers, pad.Layers)
 	}
 }

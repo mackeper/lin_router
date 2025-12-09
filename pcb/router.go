@@ -14,16 +14,18 @@ func AddTrivialSegments(board *Board) {
 
 		for i := range pads {
 			for j := i + 1; j < len(pads); j++ {
-				if pads[i].Distance(pads[j]) <= MaxRoutingDistance &&
-					pads[i].Layer == pads[j].Layer {
-					seg := Segment{
-						Start: pads[i].Position,
-						End:   pads[j].Position,
-						Width: DefaultTraceWidth,
-						Layer: pads[i].Layer,
-						Net:   netNum,
+				if pads[i].Distance(pads[j]) <= MaxRoutingDistance {
+					sharedLayers := pads[i].GetSharedCopperLayers(pads[j])
+					for _, layer := range sharedLayers {
+						seg := Segment{
+							Start: pads[i].Position,
+							End:   pads[j].Position,
+							Width: DefaultTraceWidth,
+							Layer: layer,
+							Net:   netNum,
+						}
+						board.AddSegment(seg)
 					}
-					board.AddSegment(seg)
 				}
 			}
 		}
