@@ -21,13 +21,16 @@ run:
 build-run: build
 	@./$(BUILD_DIR)/$(BINARY_NAME)
 
-test:
+test: build
+	@echo "Running tests..."
 	@go test -v ./...
 
 fmt:
+	@echo "Formatting code..."
 	@go fmt ./...
 
 vet:
+	@echo "Running vet..."
 	@go vet ./...
 
 .PHONY: all build clean run build-run test fmt vet

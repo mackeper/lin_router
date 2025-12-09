@@ -27,7 +27,7 @@ type NumberValue struct {
 	Value float64
 }
 
-func (ExprValue) isValue()   {}
+func (ExprValue) isValue() {}
 func (v ExprValue) String() string {
 	return v.Value.String()
 }
@@ -37,7 +37,7 @@ func (v StringValue) String() string {
 	return fmt.Sprintf("\"%s\"", v.Value)
 }
 
-func (NumberValue) isValue()    {}
+func (NumberValue) isValue() {}
 func (v NumberValue) String() string {
 	return fmt.Sprintf("%f", v.Value)
 }
@@ -47,6 +47,7 @@ type Expr struct {
 	Identifier string
 	Values     []Value
 }
+
 func (e Expr) String() string {
 	result := fmt.Sprintf("(%s", e.Identifier)
 	for _, val := range e.Values {
@@ -79,7 +80,8 @@ func parseExpr(tokens []Token, pos int) (Expr, int, error) {
 		switch tokens[pos].Type {
 		case OPEN_PAREN:
 			expr, newPos, err := parseExpr(tokens, pos)
-			if err != nil { }
+			if err != nil {
+			}
 			pos = newPos
 			values = append(values, ExprValue{Value: expr})
 		case STRING:
@@ -87,7 +89,8 @@ func parseExpr(tokens []Token, pos int) (Expr, int, error) {
 			pos++
 		case NUMBER:
 			value, err := strconv.ParseFloat(tokens[pos].Value, 64)
-			if err != nil { }
+			if err != nil {
+			}
 			values = append(values, NumberValue{Value: value})
 			pos++
 		}
@@ -97,7 +100,7 @@ func parseExpr(tokens []Token, pos int) (Expr, int, error) {
 		Type:       IdentifierToExprType(identifier),
 		Identifier: identifier,
 		Values:     values,
-	}, pos+1, nil
+	}, pos + 1, nil
 }
 
 func Parse(tokens []Token) (Expr, error) {

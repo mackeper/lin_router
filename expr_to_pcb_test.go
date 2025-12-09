@@ -116,7 +116,7 @@ func TestExprToPCB_MultiplePads(t *testing.T) {
 				Value: lexer.Expr{
 					Type:       lexer.ExprUnknown,
 					Identifier: "another_thing",
-					Values:     []lexer.Value{
+					Values: []lexer.Value{
 						lexer.ExprValue{
 							Value: lexer.Expr{
 								Type:       lexer.ExprPad,

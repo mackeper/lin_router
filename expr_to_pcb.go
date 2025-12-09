@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/mackeper/lin_router/lexer"
 	"github.com/mackeper/lin_router/pcb"
-)	
+)
 
 func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 	board := pcb.NewBoard()
@@ -19,7 +19,7 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 		if current.Type == lexer.ExprPad {
 			pad, _ := parsePadExpr(current)
 			pads = append(pads, pad)
-		} else {	
+		} else {
 			for _, val := range current.Values {
 				if v, ok := val.(lexer.ExprValue); ok {
 					stack = append(stack, v.Value)
@@ -34,7 +34,7 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 
 func parsePadExpr(expr lexer.Expr) (pcb.Pad, error) {
 	pad := pcb.Pad{}
-		
+
 	for _, val := range expr.Values {
 		switch v := val.(type) {
 		case lexer.ExprValue:
@@ -57,4 +57,3 @@ func parsePadExpr(expr lexer.Expr) (pcb.Pad, error) {
 	}
 	return pad, nil
 }
-		

@@ -22,7 +22,7 @@ func TestReadNextToken(t *testing.T) {
 		// Pos > 0
 		{"open paren,pos 2", "(h (", 2, OPEN_PAREN, "("},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			token, _, err := readNextToken(tt.input, tt.pos)
