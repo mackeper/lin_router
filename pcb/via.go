@@ -6,3 +6,7 @@ type Via struct {
 	Net      int
 	UUID     string
 }
+
+func (v Via) Distance(other Via) float64 {
+	return v.Position.Distance(other.Position)
+}
