@@ -18,12 +18,14 @@ func (p Position) Distance(other Position) float64 {
 type Board struct {
 	Pads     []Pad
 	Segments []Segment
+	Vias     []Via
 }
 
 func NewBoard() *Board {
 	return &Board{
 		Pads:     []Pad{},
 		Segments: []Segment{},
+		Vias:     []Via{},
 	}
 }
 
@@ -35,6 +37,10 @@ func (b *Board) AddSegment(seg Segment) {
 	b.Segments = append(b.Segments, seg)
 }
 
+func (b *Board) AddVia(via Via) {
+	b.Vias = append(b.Vias, via)
+}
+
 func (b *Board) GetPadsByNet(netNum int) []Pad {
 	var pads []Pad
 	for _, pad := range b.Pads {
@@ -43,4 +49,14 @@ func (b *Board) GetPadsByNet(netNum int) []Pad {
 		}
 	}
 	return pads
+}
+
+func (b *Board) GetViasByNet(netNum int) []Via {
+	var vias []Via
+	for _, via := range b.Vias {
+		if via.Net == netNum {
+			vias = append(vias, via)
+		}
+	}
+	return vias
 }

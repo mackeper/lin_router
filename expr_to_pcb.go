@@ -18,6 +18,7 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 
 	stack := []exprWithOffset{{expr: expr, offset: pcb.Position{X: 0, Y: 0}}}
 	pads := []pcb.Pad{}
+	vias := []pcb.Via{}
 	for len(stack) > 0 {
 		current := stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
@@ -30,6 +31,13 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 				return nil, err
 			}
 			pads = append(pads, pad)
+		} else if current.expr.Type == lexer.ExprVia {
+			slog.Debug("Found via expression")
+			via, err := parseViaExpr(current.expr)
+			if err != nil {
+				return nil, err
+			}
+			vias = append(vias, via)
 		} else {
 			// Check if this is a footprint and extract its position
 			offset := current.offset
@@ -51,6 +59,7 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 	}
 
 	board.Pads = pads
+	board.Vias = vias
 	return board, nil
 }
 
@@ -111,4 +120,34 @@ func parsePadExpr(expr lexer.Expr, offset pcb.Position) (pcb.Pad, error) {
 		}
 	}
 	return pad, nil
+}
+
+func parseViaExpr(expr lexer.Expr) (pcb.Via, error) {
+	via := pcb.Via{}
+
+	for _, val := range expr.Values {
+		slog.Debug("Parsing via sub-expression", "val", val)
+		switch v := val.(type) {
+		case lexer.ExprValue:
+			subExpr := v.Value
+			switch subExpr.Type {
+			case lexer.ExprAt:
+				via.Position = pcb.Position{
+					X: subExpr.Values[0].(lexer.NumberValue).Value,
+					Y: subExpr.Values[1].(lexer.NumberValue).Value,
+				}
+			case lexer.ExprNet:
+				via.Net = int(subExpr.Values[0].(lexer.NumberValue).Value)
+			case lexer.ExprLayers:
+				for _, layerVal := range subExpr.Values {
+					if strVal, ok := layerVal.(lexer.StringValue); ok {
+						via.Layers = append(via.Layers, strVal.Value)
+					}
+				}
+			case lexer.ExprUUID:
+				via.UUID = subExpr.Values[0].(lexer.StringValue).Value
+			}
+		}
+	}
+	return via, nil
 }
