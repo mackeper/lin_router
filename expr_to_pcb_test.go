@@ -2,10 +2,12 @@ package main
 
 import (
 	"github.com/mackeper/lin_router/lexer"
+	"github.com/mackeper/lin_router/pcb"
 	"testing"
 )
 
 func TestExprToPCB_SimplePad(t *testing.T) {
+	// Arrange
 	expr := lexer.Expr{
 		Type: lexer.ExprUnknown,
 		Values: []lexer.Value{
@@ -49,23 +51,142 @@ func TestExprToPCB_SimplePad(t *testing.T) {
 		},
 	}
 
+	// Act
 	board, err := ExprToPCB(expr)
+
+	// Assert
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(board.Pads) != 1 {
-		t.Fatalf("Expected 1 pad, got %d", len(board.Pads))
+	validateBoard(t, board, 1)
+	validatePad(t, board.Pads[0], 10.0, 20.0, 1, "GND", "F.Cu")
+}
+
+func TestExprToPCB_MultiplePads(t *testing.T) {
+	// Arrange
+	expr := lexer.Expr{
+		Type: lexer.ExprUnknown,
+		Values: []lexer.Value{
+			lexer.ExprValue{
+				Value: lexer.Expr{
+					Type:       lexer.ExprPad,
+					Identifier: "pad",
+					Values: []lexer.Value{
+						lexer.ExprValue{
+							Value: lexer.Expr{
+								Type:       lexer.ExprAt,
+								Identifier: "at",
+								Values: []lexer.Value{
+									lexer.NumberValue{Value: 10.0},
+									lexer.NumberValue{Value: 20.0},
+								},
+							},
+						},
+						lexer.ExprValue{
+							Value: lexer.Expr{
+								Type:       lexer.ExprNet,
+								Identifier: "net",
+								Values: []lexer.Value{
+									lexer.NumberValue{Value: 1},
+									lexer.StringValue{Value: "GND"},
+								},
+							},
+						},
+						lexer.ExprValue{
+							Value: lexer.Expr{
+								Type:       lexer.ExprLayer,
+								Identifier: "layer",
+								Values: []lexer.Value{
+									lexer.StringValue{Value: "F.Cu"},
+								},
+							},
+						},
+					},
+				},
+			},
+			lexer.ExprValue{
+				Value: lexer.Expr{
+					Type:       lexer.ExprUnknown,
+					Identifier: "some_other_thing",
+					Values:     []lexer.Value{},
+				},
+			},
+			lexer.ExprValue{
+				Value: lexer.Expr{
+					Type:       lexer.ExprUnknown,
+					Identifier: "another_thing",
+					Values:     []lexer.Value{
+						lexer.ExprValue{
+							Value: lexer.Expr{
+								Type:       lexer.ExprPad,
+								Identifier: "pad",
+								Values: []lexer.Value{
+									lexer.ExprValue{
+										Value: lexer.Expr{
+											Type:       lexer.ExprAt,
+											Identifier: "at",
+											Values: []lexer.Value{
+												lexer.NumberValue{Value: 11.0},
+												lexer.NumberValue{Value: 21.1},
+											},
+										},
+									},
+									lexer.ExprValue{
+										Value: lexer.Expr{
+											Type:       lexer.ExprNet,
+											Identifier: "net",
+											Values: []lexer.Value{
+												lexer.NumberValue{Value: 2},
+												lexer.StringValue{Value: "RAW"},
+											},
+										},
+									},
+									lexer.ExprValue{
+										Value: lexer.Expr{
+											Type:       lexer.ExprLayer,
+											Identifier: "layer",
+											Values: []lexer.Value{
+												lexer.StringValue{Value: "*.Cu *.Mask"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
-	pad := board.Pads[0]
-	if pad.Position.X != 10.0 || pad.Position.Y != 20.0 {
-		t.Errorf("Expected pad position (10.0, 20.0), got (%f, %f)", pad.Position.X, pad.Position.Y)
+	// Act
+	board, err := ExprToPCB(expr)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
 	}
-	if pad.Net.Number != 1 || pad.Net.Name != "GND" {
-		t.Errorf("Expected pad net (1, GND), got (%d, %s)", pad.Net.Number, pad.Net.Name)
+
+	validateBoard(t, board, 2)
+	validatePad(t, board.Pads[0], 11.0, 21.1, 2, "RAW", "*.Cu *.Mask")
+	validatePad(t, board.Pads[1], 10.0, 20.0, 1, "GND", "F.Cu")
+}
+
+func validateBoard(t *testing.T, board *pcb.Board, expectedPadCount int) {
+	if len(board.Pads) != expectedPadCount {
+		t.Errorf("Expected %d pads, got %d", expectedPadCount, len(board.Pads))
 	}
-	if pad.Layer != "F.Cu" {
-		t.Errorf("Expected pad layer F.Cu, got %s", pad.Layer)
+}
+
+func validatePad(t *testing.T, pad pcb.Pad, expectedX, expectedY float64, expectedNetNumber int, expectedNetName, expectedLayer string) {
+	if pad.Position.X != expectedX || pad.Position.Y != expectedY {
+		t.Errorf("Expected pad position (%f, %f), got (%f, %f)", expectedX, expectedY, pad.Position.X, pad.Position.Y)
+	}
+	if pad.Net.Number != expectedNetNumber || pad.Net.Name != expectedNetName {
+		t.Errorf("Expected pad net (%d, %s), got (%d, %s)", expectedNetNumber, expectedNetName, pad.Net.Number, pad.Net.Name)
+	}
+	if pad.Layer != expectedLayer {
+		t.Errorf("Expected pad layer %s, got %s", expectedLayer, pad.Layer)
 	}
 }
