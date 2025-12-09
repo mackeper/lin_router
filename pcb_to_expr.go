@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"log/slog"
+
 	"github.com/mackeper/lin_router/lexer"
 	"github.com/mackeper/lin_router/pcb"
 )
@@ -9,8 +10,10 @@ import (
 func AddSegmentsToExpr(board *pcb.Board, expr *lexer.Expr) (lexer.Expr, error) {
 	segmentExprs := []lexer.Expr{}
 	for _, seg := range board.Segments {
-		fmt.Printf("Add segment from (%f, %f) to (%f, %f) width %f layer %s\n",
-			seg.Start.X, seg.Start.Y, seg.End.X, seg.End.Y, seg.Width, seg.Layer)
+		slog.Debug("Add segment",
+			"start_x", seg.Start.X, "start_y", seg.Start.Y,
+			"end_x", seg.End.X, "end_y", seg.End.Y,
+			"width", seg.Width, "layer", seg.Layer)
 		segExpr := lexer.Expr{
 			Type: lexer.ExprSegment,
 			Identifier: "segment",
@@ -45,16 +48,23 @@ func AddSegmentsToExpr(board *pcb.Board, expr *lexer.Expr) (lexer.Expr, error) {
 						lexer.StringValue{Value: seg.Layer},
 					},
 				}},
+				lexer.ExprValue{Value: lexer.Expr{
+					Type: lexer.ExprUUID,
+					Identifier: "uuid",
+					Values: []lexer.Value{
+						lexer.StringValue{Value: seg.UUID},
+					},
+				}},
 			},
 		}
 		segmentExprs = append(segmentExprs, segExpr)
-		fmt.Printf("Created segment expression: %s\n", segExpr.String())
+		slog.Debug("Created segment expression", "expr", segExpr.String())
 	}
 
 	for _, segExpr := range segmentExprs {
 		expr.Values = append(expr.Values, lexer.ExprValue{Value: segExpr})
 	}
 
-	fmt.Printf("Added %d segments to expression\n", len(segmentExprs))
+	slog.Debug("Added segments to expression", "count", len(segmentExprs))
 	return *expr, nil
 }

@@ -18,6 +18,7 @@ const (
 	ExprEnd
 	ExprWidth
 	ExprLayers
+	ExprUUID
 )
 
 func (et ExprType) String() string {
@@ -50,6 +51,8 @@ func (et ExprType) String() string {
 		return "width"
 	case ExprLayers:
 		return "layers"
+	case ExprUUID:
+		return "uuid"
 	default:
 		return "unknown"
 	}
@@ -85,6 +88,8 @@ func IdentifierToExprType(identifier string) ExprType {
 		return ExprWidth
 	case "layers":
 		return ExprLayers
+	case "uuid":
+		return ExprUUID
 	default:
 		return ExprUnknown
 	}

@@ -1,5 +1,7 @@
 package pcb
 
+import "github.com/mackeper/lin_router/utils"
+
 const MaxRoutingDistance = 3.0
 const DefaultTraceWidth = 0.2
 
@@ -23,6 +25,7 @@ func AddTrivialSegments(board *Board) {
 							Width: DefaultTraceWidth,
 							Layer: layer,
 							Net:   netNum,
+							UUID:  utils.GenerateUUID(),
 						}
 						board.AddSegment(seg)
 					}

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"log/slog"
+
 	"github.com/mackeper/lin_router/lexer"
 	"github.com/mackeper/lin_router/pcb"
 )
@@ -15,9 +16,9 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 		current := stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
 
-		fmt.Printf("Processing expr of type: %v\n", current.Type)
+		slog.Debug("Processing expr", "type", current.Type)
 		if current.Type == lexer.ExprPad {
-			fmt.Printf("Found pad expression: %+v\n", current)
+			slog.Debug("Found pad expression")
 			pad, _ := parsePadExpr(current)
 			pads = append(pads, pad)
 		} else {
@@ -37,7 +38,7 @@ func parsePadExpr(expr lexer.Expr) (pcb.Pad, error) {
 	pad := pcb.Pad{}
 
 	for _, val := range expr.Values {
-		fmt.Printf("Parsing pad sub-expression: %+v\n", val)
+		slog.Debug("Parsing pad sub-expression", "val", val)
 		switch v := val.(type) {
 		case lexer.ExprValue:
 			subExpr := v.Value

@@ -52,7 +52,7 @@
      (net 58 "P0")
      (uuid "6a8dccb8-dbff-4b89-a60c-95990bd4d852")
     )
-    (pad "2" thru_hole circle
+    (pad "3" thru_hole circle
      (at 8.275 -0.899999)
      (size 1.7526 1.7526)
      (drill 1.0922)
@@ -61,7 +61,7 @@
      (net 58 "P0")
      (uuid "7321f6f0-a788-4c01-b37c-37f37caec04e")
     )
-    (pad "2" thru_hole circle
+    (pad "4" thru_hole circle
      (at 8.275 -2.899999)
      (size 1.7526 1.7526)
      (drill 1.0922)
@@ -69,5 +69,21 @@
      (remove_unused_layers no)
      (net 58 "P0")
      (uuid "8321f6f0-a788-4c01-b37c-37f37caec04e")
+    )
+    (pad "5" thru_hole circle
+     (at 10.275 -2.899999)
+     (size 1.7526 1.7526)
+     (drill 1.0922)
+     (layers "*.Cu")
+     (remove_unused_layers no)
+     (net 58 "P0")
+     (uuid "7321f6f0-a788-4c01-b37c-37f37caec04e")
+    )
+    (pad "6" smd rect
+     (at 10.275 0 27)
+     (size 2.6 2.6)
+     (layers "F.Cu" "F.Paste" "F.SilkS")
+     (net 58 "P0")
+     (uuid "6a8dccb8-dbff-4b89-a60c-95990bd4d852")
     )
 )

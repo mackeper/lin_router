@@ -3,48 +3,51 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/mackeper/lin_router/pcb"
 )
-
-func verbosePrint(verbose bool, message string) {
-	if verbose {
-		fmt.Println(message)
-	}
-}
 
 func main() {
 	inputPath := flag.String("i", "", "Path to the KiCad PCB file to process (required)")
 	verbose := flag.Bool("v", false, "Enable verbose output")
 	flag.Parse()
 
+	// Setup logging
+	level := slog.LevelError
+	if *verbose {
+		level = slog.LevelDebug
+	}
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level})
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
 	if *inputPath == "" {
-		fmt.Println("Error: -i flag is required")
+		slog.Error("-i flag is required")
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	verbosePrint(*verbose, "Parsing PCB file: "+*inputPath)
+	slog.Debug("Parsing PCB file", "path", *inputPath)
 	expr, err := ParsePcbFile(*inputPath)
 	if err != nil {
-		fmt.Println("Error parsing PCB file:", err)
+		slog.Error("Error parsing PCB file", "error", err)
 		os.Exit(1)
 	}
 
-	verbosePrint(*verbose, "Converting expression to PCB structure")
+	slog.Debug("Converting expression to PCB structure")
 	board, err := ExprToPCB(expr)
 	if err != nil {
-		fmt.Println("Error converting expression to PCB:", err)
+		slog.Error("Error converting expression to PCB", "error", err)
 		os.Exit(1)
 	}
 
-	verbosePrint(*verbose, "Adding trivial segments to PCB")
+	slog.Debug("Adding trivial segments to PCB")
 	pcb.AddTrivialSegments(board)
 
-	verbosePrint(*verbose, "Converting PCB structure back to expression")
+	slog.Debug("Converting PCB structure back to expression")
 	AddSegmentsToExpr(board, &expr)
 
-	fmt.Printf("Writing modified PCB to stdout\n")
 	fmt.Println(expr.String())
 }
