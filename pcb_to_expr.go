@@ -49,6 +49,13 @@ func AddSegmentsToExpr(board *pcb.Board, expr *lexer.Expr) (lexer.Expr, error) {
 					},
 				}},
 				lexer.ExprValue{Value: lexer.Expr{
+					Type: lexer.ExprNet,
+					Identifier: "net",
+					Values: []lexer.Value{
+						lexer.NumberValue{Value: float64(seg.Net)},
+					},
+				}},
+				lexer.ExprValue{Value: lexer.Expr{
 					Type: lexer.ExprUUID,
 					Identifier: "uuid",
 					Values: []lexer.Value{

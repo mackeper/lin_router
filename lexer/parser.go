@@ -43,6 +43,10 @@ func (v StringValue) String() string {
 
 func (NumberValue) isValue() {}
 func (v NumberValue) String() string {
+	// Format integers without decimals
+	if v.Value == float64(int(v.Value)) {
+		return fmt.Sprintf("%d", int(v.Value))
+	}
 	return fmt.Sprintf("%f", v.Value)
 }
 

@@ -179,7 +179,7 @@ func TestValueString(t *testing.T) {
 					NumberValue{Value: 42},
 				},
 			}},
-			"(greet \"world\" 42.000000)",
+			"(greet \"world\" 42)",
 		},
 		{
 			"Nested ExprValue",
@@ -195,7 +195,7 @@ func TestValueString(t *testing.T) {
 					NumberValue{Value: 123},
 				},
 			}},
-			"(outer (inner \"nested\") 123.000000)",
+			"(outer (inner \"nested\") 123)",
 		},
 		{
 			"Nested ExprValue segment",
