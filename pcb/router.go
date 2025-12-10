@@ -22,7 +22,7 @@ func AddTrivialSegments(board *Board) {
 		for i := range pads {
 			for j := i + 1; j < len(pads); j++ {
 				if pads[i].Distance(pads[j]) <= MaxRoutingDistance {
-					sharedLayers := pads[i].GetSharedCopperLayers(pads[j])
+					sharedLayers := getSharedLayers(pads[i].Layers, pads[j].Layers)
 					for _, layer := range sharedLayers {
 						seg := Segment{
 							Start: pads[i].Position,
