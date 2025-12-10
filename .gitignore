@@ -35,5 +35,5 @@ go.work.sum
 # kicad files
 *.kicad_pro
 *.kicad_prl
-*.kicad_pcb
+*.kicad_pcb*
 fp-info-cache

@@ -31,6 +31,9 @@ func TestReadNextToken(t *testing.T) {
 		{"0 decimal", "0.5 ", 0, NUMBER, "0.5"},
 		{"-0 decimal", "-0.5 ", 0, NUMBER, "-0.5"},
 		{"Just 0", "0 ", 0, NUMBER, "0"},
+		// Hex identifiers starting with digit
+		{"hex id tedit", "5DD50112 ", 0, IDENTIFIER, "5DD50112"},
+		{"hex id 5B", "5B307E4C ", 0, IDENTIFIER, "5B307E4C"},
 		// Pos > 0
 		{"open paren,pos 2", "(h (", 2, OPEN_PAREN, "("},
 	}

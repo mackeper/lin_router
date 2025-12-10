@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"regexp"
 )
 
 func isWhitespace(ch byte) bool {
@@ -18,6 +19,12 @@ func isPositiveDigit(ch byte) bool {
 
 func isLetter(ch byte) bool {
 	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ch == '_'
+}
+
+var numberRegex = regexp.MustCompile(`^-?[0-9]+(\.[0-9]+)?$`)
+
+func isValidNumber(s string) bool {
+	return numberRegex.MatchString(s)
 }
 
 func readNextToken(data string, pos int) (Token, int, error) {
@@ -46,7 +53,10 @@ func readNextToken(data string, pos int) (Token, int, error) {
 				value += string(data[pos])
 				pos++
 			}
-			return Token{Type: NUMBER, Value: value}, pos, nil
+			if isValidNumber(value) {
+				return Token{Type: NUMBER, Value: value}, pos, nil
+			}
+			return Token{Type: IDENTIFIER, Value: value}, pos, nil
 		case isLetter(data[pos]) ||
 			(data[pos] == '0' && pos+1 < len(data) && data[pos+1] == 'x'): // handle hex identifiers like 0x1A2B
 			value := ""
