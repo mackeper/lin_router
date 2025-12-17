@@ -28,6 +28,11 @@ func (e ExprValue) Equal(other ExprValue) bool {
 			if !ok || v.Value != ov.Value {
 				return false
 			}
+		case IdentifierValue:
+			ov, ok := other.Value.Values[i].(IdentifierValue)
+			if !ok || v.Value != ov.Value {
+				return false
+			}
 		}
 	}
 	return true
@@ -47,6 +52,15 @@ func TestParseExpr(t *testing.T) {
 				{Type: CLOSE_PAREN, Value: ")"},
 			},
 			Expr{Identifier: "hej", Values: []Value{}},
+		},
+		{
+			"Number identifier expr",
+			[]Token{
+				{Type: OPEN_PAREN, Value: "("},
+				{Type: NUMBER, Value: "31"},
+				{Type: CLOSE_PAREN, Value: ")"},
+			},
+			Expr{Identifier: "31", Values: []Value{}},
 		},
 		{
 			"expr with number",
@@ -92,6 +106,22 @@ func TestParseExpr(t *testing.T) {
 						NumberValue{Value: 42},
 					},
 				}},
+			}},
+		},
+		{
+			"expr with identifier values",
+			[]Token{
+				{Type: OPEN_PAREN, Value: "("},
+				{Type: IDENTIFIER, Value: "pad"},
+				{Type: STRING, Value: "1"},
+				{Type: IDENTIFIER, Value: "smd"},
+				{Type: IDENTIFIER, Value: "rect"},
+				{Type: CLOSE_PAREN, Value: ")"},
+			},
+			Expr{Identifier: "pad", Values: []Value{
+				StringValue{Value: "1"},
+				IdentifierValue{Value: "smd"},
+				IdentifierValue{Value: "rect"},
 			}},
 		},
 	}
@@ -149,7 +179,7 @@ func TestValueString(t *testing.T) {
 					NumberValue{Value: 42},
 				},
 			}},
-			"(greet \"world\" 42.000000)",
+			"(greet \"world\" 42)",
 		},
 		{
 			"Nested ExprValue",
@@ -165,7 +195,28 @@ func TestValueString(t *testing.T) {
 					NumberValue{Value: 123},
 				},
 			}},
-			"(outer (inner \"nested\") 123.000000)",
+			"(outer (inner \"nested\") 123)",
+		},
+		{
+			"Nested ExprValue segment",
+			ExprValue{Value: Expr{
+				Identifier: "segment",
+				Values: []Value{
+					ExprValue{Value: Expr{
+						Identifier: "start",
+						Values: []Value{
+							NumberValue{Value: 0.1},
+							NumberValue{Value: 1.1},
+						},
+					}},
+				},
+			}},
+			"(segment (start 0.100000 1.100000))",
+		},
+		{
+			"IdentifierValue",
+			IdentifierValue{Value: "smd"},
+			"smd",
 		},
 	}
 

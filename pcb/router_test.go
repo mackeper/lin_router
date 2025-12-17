@@ -9,12 +9,12 @@ func TestRouteBoard_TwoPadsSameNetCloseEnough(t *testing.T) {
 	board.AddPad(Pad{
 		Position: Position{0, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 	board.AddPad(Pad{
 		Position: Position{2, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 
 	AddTrivialSegments(board)
@@ -35,12 +35,12 @@ func TestRouteBoard_TwoPadsTooFarApart(t *testing.T) {
 	board.AddPad(Pad{
 		Position: Position{0, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 	board.AddPad(Pad{
 		Position: Position{5, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 
 	AddTrivialSegments(board)
@@ -55,12 +55,12 @@ func TestRouteBoard_TwoPadsDifferentLayers(t *testing.T) {
 	board.AddPad(Pad{
 		Position: Position{0, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 	board.AddPad(Pad{
 		Position: Position{1, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "B.Cu",
+		Layers:   []string{"B.Cu"},
 	})
 
 	AddTrivialSegments(board)
@@ -75,17 +75,17 @@ func TestRouteBoard_ThreePadsFormingTriangle(t *testing.T) {
 	board.AddPad(Pad{
 		Position: Position{0, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 	board.AddPad(Pad{
 		Position: Position{2, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 	board.AddPad(Pad{
 		Position: Position{1, 1},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 
 	AddTrivialSegments(board)
@@ -100,12 +100,12 @@ func TestRouteBoard_DifferentNets(t *testing.T) {
 	board.AddPad(Pad{
 		Position: Position{0, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 	board.AddPad(Pad{
 		Position: Position{1, 0},
 		Net:      Net{Number: 2, Name: "GND"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 
 	AddTrivialSegments(board)
@@ -130,7 +130,7 @@ func TestRouteBoard_SinglePad(t *testing.T) {
 	board.AddPad(Pad{
 		Position: Position{0, 0},
 		Net:      Net{Number: 1, Name: "VCC"},
-		Layer:    "F.Cu",
+		Layers:   []string{"F.Cu"},
 	})
 
 	AddTrivialSegments(board)
@@ -142,10 +142,10 @@ func TestRouteBoard_SinglePad(t *testing.T) {
 
 func TestRouteBoard_MultipleNets(t *testing.T) {
 	board := NewBoard()
-	board.AddPad(Pad{Position: Position{0, 0}, Net: Net{Number: 1, Name: "VCC"}, Layer: "F.Cu"})
-	board.AddPad(Pad{Position: Position{1, 0}, Net: Net{Number: 1, Name: "VCC"}, Layer: "F.Cu"})
-	board.AddPad(Pad{Position: Position{10, 10}, Net: Net{Number: 2, Name: "GND"}, Layer: "F.Cu"})
-	board.AddPad(Pad{Position: Position{11, 10}, Net: Net{Number: 2, Name: "GND"}, Layer: "F.Cu"})
+	board.AddPad(Pad{Position: Position{0, 0}, Net: Net{Number: 1, Name: "VCC"}, Layers: []string{"F.Cu"}})
+	board.AddPad(Pad{Position: Position{1, 0}, Net: Net{Number: 1, Name: "VCC"}, Layers: []string{"F.Cu"}})
+	board.AddPad(Pad{Position: Position{10, 10}, Net: Net{Number: 2, Name: "GND"}, Layers: []string{"F.Cu"}})
+	board.AddPad(Pad{Position: Position{11, 10}, Net: Net{Number: 2, Name: "GND"}, Layers: []string{"F.Cu"}})
 
 	AddTrivialSegments(board)
 

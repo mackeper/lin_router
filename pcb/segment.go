@@ -6,6 +6,7 @@ type Segment struct {
 	Width float64
 	Layer string
 	Net   int
+	UUID  string
 }
 
 func (s Segment) Length() float64 {

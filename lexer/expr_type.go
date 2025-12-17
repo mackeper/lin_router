@@ -14,6 +14,11 @@ const (
 	ExprGrLine
 	ExprGrArc
 	ExprAt
+	ExprStart
+	ExprEnd
+	ExprWidth
+	ExprLayers
+	ExprUUID
 )
 
 func (et ExprType) String() string {
@@ -38,6 +43,16 @@ func (et ExprType) String() string {
 		return "gr_arc"
 	case ExprAt:
 		return "at"
+	case ExprStart:
+		return "start"
+	case ExprEnd:
+		return "end"
+	case ExprWidth:
+		return "width"
+	case ExprLayers:
+		return "layers"
+	case ExprUUID:
+		return "uuid"
 	default:
 		return "unknown"
 	}
@@ -65,6 +80,16 @@ func IdentifierToExprType(identifier string) ExprType {
 		return ExprGrArc
 	case "at":
 		return ExprAt
+	case "start":
+		return ExprStart
+	case "end":
+		return ExprEnd
+	case "width":
+		return ExprWidth
+	case "layers":
+		return ExprLayers
+	case "uuid":
+		return ExprUUID
 	default:
 		return ExprUnknown
 	}
