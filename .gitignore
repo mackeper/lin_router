@@ -32,8 +32,9 @@ go.work.sum
 # .idea/
 # .vscode/
 
-# kicad files
+# kicad files (except test data)
 *.kicad_pro
 *.kicad_prl
 *.kicad_pcb
+!test_data/*.kicad_pcb
 fp-info-cache
