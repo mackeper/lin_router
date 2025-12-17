@@ -34,7 +34,7 @@ func readNextToken(data string, pos int) (Token, int, error) {
 				value += string(data[pos])
 				pos++
 			}
-			return Token{Type: STRING, Value: value}, pos + 1, nil	
+			return Token{Type: STRING, Value: value}, pos + 1, nil
 		case isDigit(data[pos]) || (data[pos] == '-' && isDigit(data[pos+1])):
 			value := ""
 			for pos < len(data) && !isWhitespace(data[pos]) && data[pos] != ')' {
@@ -50,17 +50,20 @@ func readNextToken(data string, pos int) (Token, int, error) {
 			}
 			return Token{Type: IDENTIFIER, Value: value}, pos, nil
 		default:
-			pos++	
+			pos++
 		}
 	}
-	return Token{}, pos+1, errors.ErrUnsupported
+	return Token{}, pos + 1, errors.ErrUnsupported
 }
 
 func Tokenize(data string) ([]Token, error) {
 	tokens := []Token{}
 	pos := 0
-	for pos < len(data)  {
-		token, new_pos, _ := readNextToken(data, pos)
+	for pos < len(data) {
+		token, new_pos, err := readNextToken(data, pos)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read token at position %d: %w", pos, err)
+		}
 		fmt.Printf("Token: %s, Value: %s\n", token.Type.String(), token.Value)
 		pos = new_pos
 		tokens = append(tokens, token)

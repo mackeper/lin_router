@@ -2,8 +2,9 @@ package main
 
 import (
 	"errors"
-	"github.com/mackeper/lin_router/lexer"
 	"os"
+
+	"github.com/mackeper/lin_router/lexer"
 )
 
 func readToString(path string) (string, error) {
