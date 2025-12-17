@@ -1,3 +1,3 @@
 module github.com/mackeper/lin_router
 
-go 1.25.4
+go 1.23
