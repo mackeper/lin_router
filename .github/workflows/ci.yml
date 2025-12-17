@@ -45,8 +45,6 @@ jobs:
   kicad-drc:
     name: KiCad DRC Check
     runs-on: ubuntu-latest
-    container:
-      image: kicad/kicad:8.0
 
     steps:
     - name: Checkout code
@@ -58,7 +56,8 @@ jobs:
         for pcb in test_data/*.kicad_pcb; do
           if [ -f "$pcb" ]; then
             echo "Checking $pcb..."
-            kicad-cli pcb drc --output "drc-$(basename $pcb).json" "$pcb"
+            docker run --rm -v "$PWD:/work" -w /work kicad/kicad:8.0 \
+              kicad-cli pcb drc --output "drc-$(basename $pcb).json" "$pcb"
             echo "✓ $pcb passed DRC check"
           fi
         done
