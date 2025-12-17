@@ -53,11 +53,19 @@ jobs:
     - name: Run DRC on PCB files
       run: |
         echo "Running DRC checks on KiCad PCB files..."
+        failed=0
         for pcb in test_data/*.kicad_pcb; do
           if [ -f "$pcb" ]; then
             echo "Checking $pcb..."
-            docker run --rm -v "$PWD:/work" -w /work kicad/kicad:8.0 \
-              kicad-cli pcb drc --output "drc-$(basename $pcb).json" "$pcb"
-            echo "✓ $pcb passed DRC check"
+            if docker run --rm --user $(id -u):$(id -g) -v "$PWD:/work" -w /work kicad/kicad:8.0 \
+              kicad-cli pcb drc --output "drc-$(basename $pcb).json" "$pcb"; then
+              echo "✓ $pcb passed DRC check"
+            else
+              echo "⚠ $pcb has DRC violations (see report)"
+              failed=1
+            fi
           fi
         done
+        if [ $failed -eq 1 ]; then
+          echo "::warning::Some PCB files have DRC violations. Review the reports."
+        fi
