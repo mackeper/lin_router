@@ -33,6 +33,7 @@ go.work.sum
 # .vscode/
 
 # kicad files (except test data)
+*.rpt
 *.kicad_pro
 *.kicad_prl
 *.kicad_pcb
