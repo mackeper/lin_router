@@ -3,20 +3,22 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"math"
 
 	"github.com/mackeper/lin_router/lexer"
 	"github.com/mackeper/lin_router/pcb"
 )
 
 type exprWithOffset struct {
-	expr   lexer.Expr
-	offset pcb.Position
+	expr     lexer.Expr
+	offset   pcb.Position
+	rotation float64
 }
 
 func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 	board := pcb.NewBoard()
 
-	stack := []exprWithOffset{{expr: expr, offset: pcb.Position{X: 0, Y: 0}}}
+	stack := []exprWithOffset{{expr: expr, offset: pcb.Position{X: 0, Y: 0}, rotation: 0}}
 	pads := []pcb.Pad{}
 	vias := []pcb.Via{}
 	for len(stack) > 0 {
@@ -26,7 +28,7 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 		slog.Debug("Processing expr", "type", current.expr.Type)
 		if current.expr.Type == lexer.ExprPad {
 			slog.Debug("Found pad expression")
-			pad, err := parsePadExpr(current.expr, current.offset)
+			pad, err := parsePadExpr(current.expr, current.offset, current.rotation)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse pad: %w", err)
 			}
@@ -39,20 +41,22 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 			}
 			vias = append(vias, via)
 		} else {
-			// Check if this is a footprint and extract its position
+			// Check if this is a footprint and extract its position and rotation
 			offset := current.offset
+			rotation := current.rotation
 			if current.expr.Type == lexer.ExprFootprint {
-				footprintPos, err := extractAtPosition(current.expr)
+				footprintPos, footprintRot, err := extractAtPositionAndRotation(current.expr)
 				if err != nil {
 					return nil, fmt.Errorf("footprint missing position: %w", err)
 				}
 				offset = footprintPos
-				slog.Debug("Found footprint", "offset_x", offset.X, "offset_y", offset.Y)
+				rotation = footprintRot
+				slog.Debug("Found footprint", "offset_x", offset.X, "offset_y", offset.Y, "rotation", rotation)
 			}
 
 			for _, val := range current.expr.Values {
 				if v, ok := val.(lexer.ExprValue); ok {
-					stack = append(stack, exprWithOffset{expr: v.Value, offset: offset})
+					stack = append(stack, exprWithOffset{expr: v.Value, offset: offset, rotation: rotation})
 				}
 			}
 		}
@@ -63,32 +67,40 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 	return board, nil
 }
 
-func extractAtPosition(expr lexer.Expr) (pcb.Position, error) {
+func extractAtPositionAndRotation(expr lexer.Expr) (pcb.Position, float64, error) {
 	for _, val := range expr.Values {
 		if v, ok := val.(lexer.ExprValue); ok {
 			if v.Value.Type == lexer.ExprAt {
 				if len(v.Value.Values) < 2 {
-					return pcb.Position{}, fmt.Errorf("at expression requires 2 values")
+					return pcb.Position{}, 0, fmt.Errorf("at expression requires at least 2 values")
 				}
 				xVal, ok := v.Value.Values[0].(lexer.NumberValue)
 				if !ok {
-					return pcb.Position{}, fmt.Errorf("expected NumberValue for X coordinate")
+					return pcb.Position{}, 0, fmt.Errorf("expected NumberValue for X coordinate")
 				}
 				yVal, ok := v.Value.Values[1].(lexer.NumberValue)
 				if !ok {
-					return pcb.Position{}, fmt.Errorf("expected NumberValue for Y coordinate")
+					return pcb.Position{}, 0, fmt.Errorf("expected NumberValue for Y coordinate")
 				}
+
+				rotation := 0.0
+				if len(v.Value.Values) >= 3 {
+					if rotVal, ok := v.Value.Values[2].(lexer.NumberValue); ok {
+						rotation = rotVal.Value
+					}
+				}
+
 				return pcb.Position{
 					X: xVal.Value,
 					Y: yVal.Value,
-				}, nil
+				}, rotation, nil
 			}
 		}
 	}
-	return pcb.Position{}, fmt.Errorf("no at position found")
+	return pcb.Position{}, 0, fmt.Errorf("no at position found")
 }
 
-func parsePadExpr(expr lexer.Expr, offset pcb.Position) (pcb.Pad, error) {
+func parsePadExpr(expr lexer.Expr, offset pcb.Position, rotation float64) (pcb.Pad, error) {
 	pad := pcb.Pad{}
 
 	for _, val := range expr.Values {
@@ -111,11 +123,15 @@ func parsePadExpr(expr lexer.Expr, offset pcb.Position) (pcb.Pad, error) {
 				}
 				relX := xVal.Value
 				relY := yVal.Value
+
+				// Apply rotation transformation
+				rotatedX, rotatedY := rotatePoint(relX, relY, rotation)
+
 				pad.Position = pcb.Position{
-					X: relX + offset.X,
-					Y: relY + offset.Y,
+					X: rotatedX + offset.X,
+					Y: rotatedY + offset.Y,
 				}
-				slog.Debug("Pad position", "rel_x", relX, "rel_y", relY, "abs_x", pad.Position.X, "abs_y", pad.Position.Y)
+				slog.Debug("Pad position", "rel_x", relX, "rel_y", relY, "rotation", rotation, "abs_x", pad.Position.X, "abs_y", pad.Position.Y)
 			case lexer.ExprNet:
 				if len(subExpr.Values) < 2 {
 					return pad, fmt.Errorf("net expression requires 2 values")
@@ -198,4 +214,11 @@ func parseViaExpr(expr lexer.Expr) (pcb.Via, error) {
 		}
 	}
 	return via, nil
+}
+
+func rotatePoint(x, y, degrees float64) (float64, float64) {
+	radians := -degrees * math.Pi / 180.0
+	cos := math.Cos(radians)
+	sin := math.Sin(radians)
+	return x*cos - y*sin, x*sin + y*cos
 }

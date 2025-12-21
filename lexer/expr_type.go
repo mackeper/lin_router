@@ -62,7 +62,7 @@ func IdentifierToExprType(identifier string) ExprType {
 	switch identifier {
 	case "kicad_pcb":
 		return ExprKicadPcb
-	case "footprint":
+	case "footprint", "module":
 		return ExprFootprint
 	case "pad":
 		return ExprPad
