@@ -1,6 +1,10 @@
 package pcb
 
-import "github.com/mackeper/lin_router/utils"
+import (
+	"log/slog"
+
+	"github.com/mackeper/lin_router/utils"
+)
 
 const MaxRoutingDistance = 3.0
 const DefaultTraceWidth = 0.2
@@ -14,15 +18,20 @@ func AddTrivialSegments(board *Board) {
 		netMap[via.Net] = true
 	}
 
+	slog.Debug("Router starting", "total_pads", len(board.Pads), "total_vias", len(board.Vias), "nets", len(netMap))
+
 	for netNum := range netMap {
 		pads := board.GetPadsByNet(netNum)
 		vias := board.GetViasByNet(netNum)
+		slog.Debug("Processing net", "net", netNum, "pads", len(pads), "vias", len(vias))
 
 		// Pad to Pad
 		for i := range pads {
 			for j := i + 1; j < len(pads); j++ {
-				if pads[i].Distance(pads[j]) <= MaxRoutingDistance {
+				dist := pads[i].Distance(pads[j])
+				if dist <= MaxRoutingDistance {
 					sharedLayers := getSharedLayers(pads[i].Layers, pads[j].Layers)
+					slog.Debug("Found pad pair within distance", "net", netNum, "dist", dist, "shared_layers", len(sharedLayers), "pad1_layers", pads[i].Layers, "pad2_layers", pads[j].Layers)
 					for _, layer := range sharedLayers {
 						seg := Segment{
 							Start: pads[i].Position,
@@ -33,6 +42,7 @@ func AddTrivialSegments(board *Board) {
 							UUID:  utils.GenerateUUID(),
 						}
 						board.AddSegment(seg)
+						slog.Debug("Added segment", "net", netNum, "layer", layer)
 					}
 				}
 			}

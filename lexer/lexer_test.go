@@ -34,6 +34,10 @@ func TestReadNextToken(t *testing.T) {
 		// Hex identifiers starting with digit
 		{"hex id tedit", "5DD50112 ", 0, IDENTIFIER, "5DD50112"},
 		{"hex id 5B", "5B307E4C ", 0, IDENTIFIER, "5B307E4C"},
+		// Identifiers with special chars
+		{"layer wildcard", "*.Cu ", 0, IDENTIFIER, "*.Cu"},
+		{"layer with dot", "F.Cu ", 0, IDENTIFIER, "F.Cu"},
+		{"module with colon", "Lib:Part_123 ", 0, IDENTIFIER, "Lib:Part_123"},
 		// Pos > 0
 		{"open paren,pos 2", "(h (", 2, OPEN_PAREN, "("},
 	}

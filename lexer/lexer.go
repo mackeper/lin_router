@@ -27,6 +27,10 @@ func isValidNumber(s string) bool {
 	return numberRegex.MatchString(s)
 }
 
+func isIdentifierChar(ch byte) bool {
+	return isLetter(ch) || isDigit(ch) || ch == '-' || ch == '.' || ch == ':' || ch == '*'
+}
+
 func readNextToken(data string, pos int) (Token, int, error) {
 	for pos < len(data) {
 		switch {
@@ -58,9 +62,10 @@ func readNextToken(data string, pos int) (Token, int, error) {
 			}
 			return Token{Type: IDENTIFIER, Value: value}, pos, nil
 		case isLetter(data[pos]) ||
+			data[pos] == '*' || // layer wildcards like *.Cu
 			(data[pos] == '0' && pos+1 < len(data) && data[pos+1] == 'x'): // handle hex identifiers like 0x1A2B
 			value := ""
-			for pos < len(data) && (isLetter(data[pos]) || isDigit(data[pos]) || data[pos] == '-') {
+			for pos < len(data) && isIdentifierChar(data[pos]) {
 				value += string(data[pos])
 				pos++
 			}

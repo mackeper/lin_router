@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Value interface {
@@ -34,6 +35,9 @@ type IdentifierValue struct {
 func (ExprValue) isValue() {}
 func (v ExprValue) String() string {
 	return v.Value.String()
+}
+func (v ExprValue) stringWithIndent(indent int) string {
+	return v.Value.stringWithIndent(indent)
 }
 
 func (StringValue) isValue() {}
@@ -62,9 +66,31 @@ type Expr struct {
 }
 
 func (e Expr) String() string {
+	return e.stringWithIndent(0)
+}
+
+func (e Expr) stringWithIndent(indent int) string {
+	// Check if this is kicad_pcb root or has many nested children
+	isRootOrComplex := e.Identifier == "kicad_pcb" || e.Identifier == "module" || e.Identifier == "footprint"
+
+	if !isRootOrComplex {
+		// Simple expression - keep on one line
+		result := fmt.Sprintf("(%s", e.Identifier)
+		for _, val := range e.Values {
+			result += " " + val.String()
+		}
+		result += ")"
+		return result
+	}
+
+	// Complex expression - format with newlines
 	result := fmt.Sprintf("(%s", e.Identifier)
 	for _, val := range e.Values {
-		result += " " + val.String()
+		if exprVal, ok := val.(ExprValue); ok {
+			result += "\n" + strings.Repeat("  ", indent+1) + exprVal.stringWithIndent(indent+1)
+		} else {
+			result += " " + val.String()
+		}
 	}
 	result += ")"
 	return result

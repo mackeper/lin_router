@@ -85,6 +85,7 @@ func parsePadExpr(expr lexer.Expr, offset pcb.Position) (pcb.Pad, error) {
 		switch v := val.(type) {
 		case lexer.ExprValue:
 			subExpr := v.Value
+			slog.Debug("Pad sub-expr type", "type", subExpr.Type)
 			switch subExpr.Type {
 			case lexer.ExprAt:
 				relX := subExpr.Values[0].(lexer.NumberValue).Value
@@ -100,7 +101,13 @@ func parsePadExpr(expr lexer.Expr, offset pcb.Position) (pcb.Pad, error) {
 					Name:   subExpr.Values[1].(lexer.StringValue).Value,
 				}
 			case lexer.ExprLayer:
-				layer := subExpr.Values[0].(lexer.StringValue).Value
+				var layer string
+				switch v := subExpr.Values[0].(type) {
+				case lexer.IdentifierValue:
+					layer = v.Value
+				case lexer.StringValue:
+					layer = v.Value
+				}
 				if layer == "*.Cu" {
 					pad.Layers = []string{"F.Cu", "B.Cu"}
 				} else {
@@ -108,12 +115,20 @@ func parsePadExpr(expr lexer.Expr, offset pcb.Position) (pcb.Pad, error) {
 				}
 			case lexer.ExprLayers:
 				for _, layerVal := range subExpr.Values {
-					if strVal, ok := layerVal.(lexer.StringValue); ok {
-						if strVal.Value == "*.Cu" {
-							pad.Layers = append(pad.Layers, "F.Cu", "B.Cu")
-						} else {
-							pad.Layers = append(pad.Layers, strVal.Value)
-						}
+					var layerStr string
+					switch v := layerVal.(type) {
+					case lexer.IdentifierValue:
+						layerStr = v.Value
+					case lexer.StringValue:
+						layerStr = v.Value
+					default:
+						continue
+					}
+
+					if layerStr == "*.Cu" {
+						pad.Layers = append(pad.Layers, "F.Cu", "B.Cu")
+					} else {
+						pad.Layers = append(pad.Layers, layerStr)
 					}
 				}
 			}
