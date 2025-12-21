@@ -47,7 +47,11 @@ func main() {
 	pcb.AddTrivialSegments(board)
 
 	slog.Debug("Converting PCB structure back to expression")
-	AddSegmentsToExpr(board, &expr)
+	expr, err = AddSegmentsToExpr(board, &expr)
+	if err != nil {
+		slog.Error("Error converting PCB back to expression", "error", err)
+		os.Exit(1)
+	}
 
 	fmt.Println(expr.String())
 }

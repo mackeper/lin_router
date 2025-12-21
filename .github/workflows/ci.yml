@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod'
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Check formatting
+      run: |
+        if [ -n "$(gofmt -l .)" ]; then
+          echo "The following files are not formatted:"
+          gofmt -l .
+          exit 1
+        fi
+
+    - name: Run tests
+      run: make test
+
+    - name: Vet code
+      run: make vet
+
+    - name: Lint
+      uses: golangci/golangci-lint-action@v4
+      with:
+        version: latest
+
+  kicad-drc:
+    name: KiCad DRC Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run DRC on PCB files
+      run: |
+        echo "Running DRC checks on KiCad PCB files..."
+        failed=0
+        for pcb in test_data/*.kicad_pcb; do
+          if [ -f "$pcb" ]; then
+            echo "Checking $pcb..."
+            if docker run --rm --user $(id -u):$(id -g) -v "$PWD:/work" -w /work kicad/kicad:8.0 \
+              kicad-cli pcb drc --output "drc-$(basename $pcb).json" "$pcb"; then
+              echo "✓ $pcb passed DRC check"
+            else
+              echo "⚠ $pcb has DRC violations (see report)"
+              failed=1
+            fi
+          fi
+        done
+        if [ $failed -eq 1 ]; then
+          echo "::warning::Some PCB files have DRC violations. Review the reports."
+        fi

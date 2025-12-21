@@ -42,7 +42,7 @@ func (v ExprValue) stringWithIndent(indent int) string {
 
 func (StringValue) isValue() {}
 func (v StringValue) String() string {
-	return fmt.Sprintf("\"%s\"", v.Value)
+	return fmt.Sprintf("%q", v.Value)
 }
 
 func (NumberValue) isValue() {}
@@ -122,7 +122,7 @@ func parseExpr(tokens []Token, pos int) (Expr, int, error) {
 		case OPEN_PAREN:
 			expr, newPos, err := parseExpr(tokens, pos)
 			if err != nil {
-				return parseExprError(err)
+				return parseExprError(fmt.Errorf("failed to parse nested expression: %w", err))
 			}
 			pos = newPos
 			values = append(values, ExprValue{Value: expr})
@@ -132,7 +132,7 @@ func parseExpr(tokens []Token, pos int) (Expr, int, error) {
 		case NUMBER:
 			value, err := strconv.ParseFloat(tokens[pos].Value, 64)
 			if err != nil {
-				return parseExprError(err)
+				return parseExprError(fmt.Errorf("failed to parse number: %w", err))
 			}
 			values = append(values, NumberValue{Value: value})
 			pos++

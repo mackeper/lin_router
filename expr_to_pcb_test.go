@@ -1,9 +1,10 @@
 package main
 
 import (
+	"testing"
+
 	"github.com/mackeper/lin_router/lexer"
 	"github.com/mackeper/lin_router/pcb"
-	"testing"
 )
 
 func TestExprToPCB_SimplePad(t *testing.T) {

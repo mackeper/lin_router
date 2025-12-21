@@ -29,6 +29,9 @@ make fmt
 # Vet code
 make vet
 
+# Lint code
+make lint
+
 # Clean build artifacts
 make clean
 

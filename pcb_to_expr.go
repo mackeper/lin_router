@@ -15,11 +15,11 @@ func AddSegmentsToExpr(board *pcb.Board, expr *lexer.Expr) (lexer.Expr, error) {
 			"end_x", seg.End.X, "end_y", seg.End.Y,
 			"width", seg.Width, "layer", seg.Layer)
 		segExpr := lexer.Expr{
-			Type: lexer.ExprSegment,
+			Type:       lexer.ExprSegment,
 			Identifier: "segment",
 			Values: []lexer.Value{
 				lexer.ExprValue{Value: lexer.Expr{
-					Type: lexer.ExprStart,
+					Type:       lexer.ExprStart,
 					Identifier: "start",
 					Values: []lexer.Value{
 						lexer.NumberValue{Value: seg.Start.X},
@@ -27,7 +27,7 @@ func AddSegmentsToExpr(board *pcb.Board, expr *lexer.Expr) (lexer.Expr, error) {
 					},
 				}},
 				lexer.ExprValue{Value: lexer.Expr{
-					Type: lexer.ExprEnd,
+					Type:       lexer.ExprEnd,
 					Identifier: "end",
 					Values: []lexer.Value{
 						lexer.NumberValue{Value: seg.End.X},
@@ -35,28 +35,28 @@ func AddSegmentsToExpr(board *pcb.Board, expr *lexer.Expr) (lexer.Expr, error) {
 					},
 				}},
 				lexer.ExprValue{Value: lexer.Expr{
-					Type: lexer.ExprWidth,
+					Type:       lexer.ExprWidth,
 					Identifier: "width",
 					Values: []lexer.Value{
 						lexer.NumberValue{Value: seg.Width},
 					},
 				}},
 				lexer.ExprValue{Value: lexer.Expr{
-					Type: lexer.ExprLayer,
+					Type:       lexer.ExprLayer,
 					Identifier: "layer",
 					Values: []lexer.Value{
 						lexer.StringValue{Value: seg.Layer},
 					},
 				}},
 				lexer.ExprValue{Value: lexer.Expr{
-					Type: lexer.ExprNet,
+					Type:       lexer.ExprNet,
 					Identifier: "net",
 					Values: []lexer.Value{
 						lexer.NumberValue{Value: float64(seg.Net)},
 					},
 				}},
 				lexer.ExprValue{Value: lexer.Expr{
-					Type: lexer.ExprUUID,
+					Type:       lexer.ExprUUID,
 					Identifier: "uuid",
 					Values: []lexer.Value{
 						lexer.StringValue{Value: seg.UUID},

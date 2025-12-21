@@ -28,7 +28,7 @@ func ExprToPCB(expr lexer.Expr) (*pcb.Board, error) {
 			slog.Debug("Found pad expression")
 			pad, err := parsePadExpr(current.expr, current.offset)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to parse pad: %w", err)
 			}
 			pads = append(pads, pad)
 		} else if current.expr.Type == lexer.ExprVia {
@@ -67,9 +67,20 @@ func extractAtPosition(expr lexer.Expr) (pcb.Position, error) {
 	for _, val := range expr.Values {
 		if v, ok := val.(lexer.ExprValue); ok {
 			if v.Value.Type == lexer.ExprAt {
+				if len(v.Value.Values) < 2 {
+					return pcb.Position{}, fmt.Errorf("at expression requires 2 values")
+				}
+				xVal, ok := v.Value.Values[0].(lexer.NumberValue)
+				if !ok {
+					return pcb.Position{}, fmt.Errorf("expected NumberValue for X coordinate")
+				}
+				yVal, ok := v.Value.Values[1].(lexer.NumberValue)
+				if !ok {
+					return pcb.Position{}, fmt.Errorf("expected NumberValue for Y coordinate")
+				}
 				return pcb.Position{
-					X: v.Value.Values[0].(lexer.NumberValue).Value,
-					Y: v.Value.Values[1].(lexer.NumberValue).Value,
+					X: xVal.Value,
+					Y: yVal.Value,
 				}, nil
 			}
 		}
@@ -82,32 +93,54 @@ func parsePadExpr(expr lexer.Expr, offset pcb.Position) (pcb.Pad, error) {
 
 	for _, val := range expr.Values {
 		slog.Debug("Parsing pad sub-expression", "val", val)
-		switch v := val.(type) {
-		case lexer.ExprValue:
+		if v, ok := val.(lexer.ExprValue); ok {
 			subExpr := v.Value
 			slog.Debug("Pad sub-expr type", "type", subExpr.Type)
 			switch subExpr.Type {
 			case lexer.ExprAt:
-				relX := subExpr.Values[0].(lexer.NumberValue).Value
-				relY := subExpr.Values[1].(lexer.NumberValue).Value
+				if len(subExpr.Values) < 2 {
+					return pad, fmt.Errorf("at expression requires 2 values")
+				}
+				xVal, ok := subExpr.Values[0].(lexer.NumberValue)
+				if !ok {
+					return pad, fmt.Errorf("expected NumberValue for X coordinate")
+				}
+				yVal, ok := subExpr.Values[1].(lexer.NumberValue)
+				if !ok {
+					return pad, fmt.Errorf("expected NumberValue for Y coordinate")
+				}
+				relX := xVal.Value
+				relY := yVal.Value
 				pad.Position = pcb.Position{
 					X: relX + offset.X,
 					Y: relY + offset.Y,
 				}
 				slog.Debug("Pad position", "rel_x", relX, "rel_y", relY, "abs_x", pad.Position.X, "abs_y", pad.Position.Y)
 			case lexer.ExprNet:
+				if len(subExpr.Values) < 2 {
+					return pad, fmt.Errorf("net expression requires 2 values")
+				}
+				numVal, ok := subExpr.Values[0].(lexer.NumberValue)
+				if !ok {
+					return pad, fmt.Errorf("expected NumberValue for net number")
+				}
+				nameVal, ok := subExpr.Values[1].(lexer.StringValue)
+				if !ok {
+					return pad, fmt.Errorf("expected StringValue for net name")
+				}
 				pad.Net = pcb.Net{
-					Number: int(subExpr.Values[0].(lexer.NumberValue).Value),
-					Name:   subExpr.Values[1].(lexer.StringValue).Value,
+					Number: int(numVal.Value),
+					Name:   nameVal.Value,
 				}
 			case lexer.ExprLayer:
-				var layer string
-				switch v := subExpr.Values[0].(type) {
-				case lexer.IdentifierValue:
-					layer = v.Value
-				case lexer.StringValue:
-					layer = v.Value
+				if len(subExpr.Values) < 1 {
+					return pad, fmt.Errorf("layer expression requires 1 value")
 				}
+				layerVal, ok := subExpr.Values[0].(lexer.StringValue)
+				if !ok {
+					return pad, fmt.Errorf("expected StringValue for layer")
+				}
+				layer := layerVal.Value
 				if layer == "*.Cu" {
 					pad.Layers = []string{"F.Cu", "B.Cu"}
 				} else {

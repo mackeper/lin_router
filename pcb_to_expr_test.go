@@ -1,9 +1,10 @@
 package main
 
 import (
+	"testing"
+
 	"github.com/mackeper/lin_router/lexer"
 	"github.com/mackeper/lin_router/pcb"
-	"testing"
 )
 
 // TODO: Assert the contents of the segments added to the expression
@@ -69,24 +70,17 @@ func TestAddSegmentsToExpr_MultipleSegments(t *testing.T) {
 	}
 
 	board := pcb.NewBoard()
-	board.Segments = append(
-		board.Segments,
+	board.Segments = append(board.Segments,
 		pcb.Segment{
 			Start: pcb.Position{X: 10, Y: 0},
 			End:   pcb.Position{X: 10, Y: 10},
 			Width: 1,
 		},
-	)
-	board.Segments = append(
-		board.Segments,
 		pcb.Segment{
 			Start: pcb.Position{X: 10, Y: 10},
 			End:   pcb.Position{X: 0, Y: 10},
 			Width: 1,
 		},
-	)
-	board.Segments = append(
-		board.Segments,
 		pcb.Segment{
 			Start: pcb.Position{X: 10, Y: 10},
 			End:   pcb.Position{X: 5, Y: 10},
@@ -140,7 +134,7 @@ func validateSegmentExpr(t *testing.T, expected pcb.Segment, actual lexer.Expr) 
 			expected.Start.X, expected.Start.Y,
 			startX, startY)
 	}
-	
+
 	endX := endValue.Value.Values[0].(lexer.NumberValue).Value
 	endY := endValue.Value.Values[1].(lexer.NumberValue).Value
 	if endX != expected.End.X || endY != expected.End.Y {
@@ -148,7 +142,7 @@ func validateSegmentExpr(t *testing.T, expected pcb.Segment, actual lexer.Expr) 
 			expected.End.X, expected.End.Y,
 			endX, endY)
 	}
-	
+
 	width := widthValue.Value.Values[0].(lexer.NumberValue).Value
 	if width != expected.Width {
 		t.Fatalf("Expected width %v, got %v",

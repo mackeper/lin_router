@@ -34,4 +34,9 @@ vet:
 	@echo "Running vet..."
 	@go vet ./...
 
-.PHONY: all build clean run build-run test fmt vet
+lint:
+	@echo "Running linter..."
+	@golangci-lint run
+	@echo "Lint complete"
+
+.PHONY: all build clean run build-run test fmt vet lint
