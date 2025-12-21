@@ -12,6 +12,7 @@ import (
 func main() {
 	inputPath := flag.String("i", "", "Path to the KiCad PCB file to process (required)")
 	verbose := flag.Bool("v", false, "Enable verbose output")
+	maxDistance := flag.Float64("max-distance", 3.0, "Maximum routing distance in mm")
 	flag.Parse()
 
 	// Setup logging
@@ -43,8 +44,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.Debug("Adding trivial segments to PCB")
-	pcb.AddTrivialSegments(board)
+	slog.Debug("Adding trivial segments to PCB", "max_distance", *maxDistance)
+	pcb.AddTrivialSegments(board, *maxDistance)
 
 	slog.Debug("Converting PCB structure back to expression")
 	expr, err = AddSegmentsToExpr(board, &expr)

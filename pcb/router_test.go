@@ -17,7 +17,7 @@ func TestRouteBoard_TwoPadsSameNetCloseEnough(t *testing.T) {
 		Layers:   []string{"F.Cu"},
 	})
 
-	AddTrivialSegments(board)
+	AddTrivialSegments(board, 3.0)
 
 	if len(board.Segments) != 1 {
 		t.Errorf("Expected 1 segment, got %d", len(board.Segments))
@@ -43,7 +43,7 @@ func TestRouteBoard_TwoPadsTooFarApart(t *testing.T) {
 		Layers:   []string{"F.Cu"},
 	})
 
-	AddTrivialSegments(board)
+	AddTrivialSegments(board, 3.0)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments, got %d", len(board.Segments))
@@ -63,7 +63,7 @@ func TestRouteBoard_TwoPadsDifferentLayers(t *testing.T) {
 		Layers:   []string{"B.Cu"},
 	})
 
-	AddTrivialSegments(board)
+	AddTrivialSegments(board, 3.0)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments for different layers, got %d", len(board.Segments))
@@ -88,7 +88,7 @@ func TestRouteBoard_ThreePadsFormingTriangle(t *testing.T) {
 		Layers:   []string{"F.Cu"},
 	})
 
-	AddTrivialSegments(board)
+	AddTrivialSegments(board, 3.0)
 
 	if len(board.Segments) != 3 {
 		t.Errorf("Expected 3 segments for triangle, got %d", len(board.Segments))
@@ -108,7 +108,7 @@ func TestRouteBoard_DifferentNets(t *testing.T) {
 		Layers:   []string{"F.Cu"},
 	})
 
-	AddTrivialSegments(board)
+	AddTrivialSegments(board, 3.0)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments for different nets, got %d", len(board.Segments))
@@ -118,7 +118,7 @@ func TestRouteBoard_DifferentNets(t *testing.T) {
 func TestRouteBoard_EmptyBoard(t *testing.T) {
 	board := NewBoard()
 
-	AddTrivialSegments(board)
+	AddTrivialSegments(board, 3.0)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments for empty board, got %d", len(board.Segments))
@@ -133,7 +133,7 @@ func TestRouteBoard_SinglePad(t *testing.T) {
 		Layers:   []string{"F.Cu"},
 	})
 
-	AddTrivialSegments(board)
+	AddTrivialSegments(board, 3.0)
 
 	if len(board.Segments) != 0 {
 		t.Errorf("Expected 0 segments for single pad, got %d", len(board.Segments))
@@ -147,7 +147,7 @@ func TestRouteBoard_MultipleNets(t *testing.T) {
 	board.AddPad(Pad{Position: Position{10, 10}, Net: Net{Number: 2, Name: "GND"}, Layers: []string{"F.Cu"}})
 	board.AddPad(Pad{Position: Position{11, 10}, Net: Net{Number: 2, Name: "GND"}, Layers: []string{"F.Cu"}})
 
-	AddTrivialSegments(board)
+	AddTrivialSegments(board, 3.0)
 
 	if len(board.Segments) != 2 {
 		t.Errorf("Expected 2 segments (one per net), got %d", len(board.Segments))
@@ -166,5 +166,98 @@ func TestRouteBoard_MultipleNets(t *testing.T) {
 
 	if net1Count != 1 || net2Count != 1 {
 		t.Errorf("Expected 1 segment per net, got %d for net 1 and %d for net 2", net1Count, net2Count)
+	}
+}
+
+func TestRouteBoard_MaxDistanceZero(t *testing.T) {
+	board := NewBoard()
+	board.AddPad(Pad{
+		Position: Position{0, 0},
+		Net:      Net{Number: 1, Name: "VCC"},
+		Layers:   []string{"F.Cu"},
+	})
+	board.AddPad(Pad{
+		Position: Position{0.5, 0},
+		Net:      Net{Number: 1, Name: "VCC"},
+		Layers:   []string{"F.Cu"},
+	})
+
+	AddTrivialSegments(board, 0.0)
+
+	if len(board.Segments) != 0 {
+		t.Errorf("Expected 0 segments with max distance 0, got %d", len(board.Segments))
+	}
+}
+
+func TestRouteBoard_ExactMaxDistance(t *testing.T) {
+	board := NewBoard()
+	board.AddPad(Pad{
+		Position: Position{0, 0},
+		Net:      Net{Number: 1, Name: "VCC"},
+		Layers:   []string{"F.Cu"},
+	})
+	board.AddPad(Pad{
+		Position: Position{3, 0},
+		Net:      Net{Number: 1, Name: "VCC"},
+		Layers:   []string{"F.Cu"},
+	})
+
+	AddTrivialSegments(board, 3.0)
+
+	if len(board.Segments) != 1 {
+		t.Errorf("Expected 1 segment at exact max distance, got %d", len(board.Segments))
+	}
+}
+
+func TestRouteBoard_JustUnderMaxDistance(t *testing.T) {
+	board := NewBoard()
+	board.AddPad(Pad{
+		Position: Position{0, 0},
+		Net:      Net{Number: 1, Name: "VCC"},
+		Layers:   []string{"F.Cu"},
+	})
+	board.AddPad(Pad{
+		Position: Position{2.99, 0},
+		Net:      Net{Number: 1, Name: "VCC"},
+		Layers:   []string{"F.Cu"},
+	})
+
+	AddTrivialSegments(board, 3.0)
+
+	if len(board.Segments) != 1 {
+		t.Errorf("Expected 1 segment just under max distance, got %d", len(board.Segments))
+	}
+}
+
+func TestRouteBoard_JustOverMaxDistance(t *testing.T) {
+	board := NewBoard()
+	board.AddPad(Pad{
+		Position: Position{0, 0},
+		Net:      Net{Number: 1, Name: "VCC"},
+		Layers:   []string{"F.Cu"},
+	})
+	board.AddPad(Pad{
+		Position: Position{3.01, 0},
+		Net:      Net{Number: 1, Name: "VCC"},
+		Layers:   []string{"F.Cu"},
+	})
+
+	AddTrivialSegments(board, 3.0)
+
+	if len(board.Segments) != 0 {
+		t.Errorf("Expected 0 segments just over max distance, got %d", len(board.Segments))
+	}
+}
+
+func TestRouteBoard_VeryLargeMaxDistance(t *testing.T) {
+	board := NewBoard()
+	board.AddPad(Pad{Position: Position{0, 0}, Net: Net{Number: 1, Name: "VCC"}, Layers: []string{"F.Cu"}})
+	board.AddPad(Pad{Position: Position{10, 0}, Net: Net{Number: 1, Name: "VCC"}, Layers: []string{"F.Cu"}})
+	board.AddPad(Pad{Position: Position{100, 100}, Net: Net{Number: 1, Name: "VCC"}, Layers: []string{"F.Cu"}})
+
+	AddTrivialSegments(board, 1000.0)
+
+	if len(board.Segments) != 3 {
+		t.Errorf("Expected 3 segments with very large max distance, got %d", len(board.Segments))
 	}
 }

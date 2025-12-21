@@ -6,10 +6,9 @@ import (
 	"github.com/mackeper/lin_router/utils"
 )
 
-const MaxRoutingDistance = 3.0
 const DefaultTraceWidth = 0.2
 
-func AddTrivialSegments(board *Board) {
+func AddTrivialSegments(board *Board, maxRoutingDistance float64) {
 	netMap := make(map[int]bool)
 	for _, pad := range board.Pads {
 		netMap[pad.Net.Number] = true
@@ -33,7 +32,7 @@ func AddTrivialSegments(board *Board) {
 		for i := range pads {
 			for j := i + 1; j < len(pads); j++ {
 				dist := pads[i].Distance(pads[j])
-				if dist <= MaxRoutingDistance {
+				if dist <= maxRoutingDistance {
 					sharedLayers := getSharedLayers(pads[i].Layers, pads[j].Layers)
 					slog.Debug("Found pad pair within distance", "net", netNum, "dist", dist, "shared_layers", len(sharedLayers), "pad1_layers", pads[i].Layers, "pad2_layers", pads[j].Layers)
 					for _, layer := range sharedLayers {
@@ -55,7 +54,7 @@ func AddTrivialSegments(board *Board) {
 		// Pad to Via
 		for _, pad := range pads {
 			for _, via := range vias {
-				if pad.Position.Distance(via.Position) <= MaxRoutingDistance {
+				if pad.Position.Distance(via.Position) <= maxRoutingDistance {
 					sharedLayers := getSharedLayers(pad.Layers, via.Layers)
 					for _, layer := range sharedLayers {
 						seg := Segment{
@@ -75,7 +74,7 @@ func AddTrivialSegments(board *Board) {
 		// Via to Via
 		for i := range vias {
 			for j := i + 1; j < len(vias); j++ {
-				if vias[i].Distance(vias[j]) <= MaxRoutingDistance {
+				if vias[i].Distance(vias[j]) <= maxRoutingDistance {
 					sharedLayers := getSharedLayers(vias[i].Layers, vias[j].Layers)
 					for _, layer := range sharedLayers {
 						seg := Segment{
