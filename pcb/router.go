@@ -21,6 +21,10 @@ func AddTrivialSegments(board *Board) {
 	slog.Debug("Router starting", "total_pads", len(board.Pads), "total_vias", len(board.Vias), "nets", len(netMap))
 
 	for netNum := range netMap {
+		if netNum == 0 {
+			slog.Debug("Skipping net 0 (no net)")
+			continue
+		}
 		pads := board.GetPadsByNet(netNum)
 		vias := board.GetViasByNet(netNum)
 		slog.Debug("Processing net", "net", netNum, "pads", len(pads), "vias", len(vias))
